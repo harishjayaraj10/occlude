@@ -1,5 +1,7 @@
 module Occlude
 
-greet() = print("Hello World!")
+abstract type Demo end
 
-end # module occlude
+include("demos/Mobius.jl")
+
+end
