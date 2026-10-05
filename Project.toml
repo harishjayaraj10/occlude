@@ -5,6 +5,8 @@ authors = ["harishjayaraj10 <harish100603@gmail.com>"]
 
 [deps]
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
+REPL = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 
 [compat]
 GLMakie = "0.13.15"
+REPL = "1.11.0"
