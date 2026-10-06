@@ -49,13 +49,18 @@ function launch(::Mobius)
 
   F = stack(faces, dims=1)
   fig, ax = dark_scene()
-  mesh!(ax, pts, F, 
-        color="#00a4c4",
-        specular=0.9,
-        shininess=64)
+  m = mesh!(ax, pts, F,
+            color="#00a4c4",
+            specular=0.9,
+            shininess=64)
 
-  # fig = scatter(pts, markersize=8)
-  wait(display(fig))
+  screen = display(fig)
+  θ = 0.0
+  while isopen(screen)
+    θ += 0.01
+    rotate!(m, Vec3f(0, 0, 1), θ)
+    sleep(1/60)
+  end
 end
 
 function twist(u, v, θ)
