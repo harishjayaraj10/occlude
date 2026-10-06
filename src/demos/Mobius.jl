@@ -6,7 +6,7 @@ end
 name(::Mobius) = "Mobius Strip"
 # launch(::Mobius) = println("Mobius!")
 
-function section(a; R=3, w=0.3, h=0.3)
+function section(a; R=3, w=1, h=0.5)
   center = Point3f(R*cos(a), R*sin(a), 0)
   out = Point3f(cos(a), sin(a), 0)
   up = Point3f(0, 0, 1)
@@ -23,12 +23,7 @@ function section(a; R=3, w=0.3, h=0.3)
 end
 
 function launch(::Mobius)
-  points = range(0, 2π, length=50)
-  R = 3
-
-  circle = [Point3f(R*cos(point), R*sin(point), point/2) for point in points]
-
-  N = 100
+  N = 1000
   angles = range(0, 2π, length=N)
   pts = Point3f[]
 
@@ -40,15 +35,16 @@ function launch(::Mobius)
     append!(pts, sec)
   end
 
-  k = 1
-  for i in 1:N-1
-    A = idx(i, k)
-    B = idx(i, k+1)
-    C = idx(i+1, k+1)
-    D = idx(i+1, k)
+  for k in 1:4
+    for i in 1:N-1
+      A = idx(i, k)
+      B = idx(i, mod1(k+1, 4))
+      C = idx(i+1, mod1(k+1, 4))
+      D = idx(i+1, k)
 
-    push!(faces, (A, B, C))
-    push!(faces, (A, C, D))
+      push!(faces, (A, B, C))
+      push!(faces, (A, C, D))
+    end
   end
 
   F = stack(faces, dims=1)
