@@ -42,8 +42,8 @@ function launch(::Mobius)
       C = idx(mod1(i+1,N), mod1(k+1+shift, 4))
       D = idx(mod1(i+1,N), mod1(k+shift, 4))
 
-      push!(faces, (A, B, C))
-      push!(faces, (A, C, D))
+      push!(faces, (A, C, B))
+      push!(faces, (A, D, C))
     end
   end
 
