@@ -28,15 +28,33 @@ function launch(::Mobius)
 
   circle = [Point3f(R*cos(point), R*sin(point), point/2) for point in points]
 
-  angles = range(0, 2π, length=100)
+  N = 100
+  angles = range(0, 2π, length=N)
   pts = Point3f[]
+
+  idx(i, k) = (i-1)*4 + k
+  faces = Tuple{Int, Int, Int}[]
 
   for angle in angles
     sec = section(angle)
     append!(pts, sec)
   end
 
-  fig = scatter(pts, markersize=8)
+  k = 1
+  for i in 1:N-1
+    A = idx(i, k)
+    B = idx(i, k+1)
+    C = idx(i+1, k+1)
+    D = idx(i+1, k)
+
+    push!(faces, (A, B, C))
+    push!(faces, (A, C, D))
+  end
+
+  F = stack(faces, dims=1)
+  fig = mesh(pts, F)
+
+  # fig = scatter(pts, markersize=8)
   wait(display(fig))
 end
 
