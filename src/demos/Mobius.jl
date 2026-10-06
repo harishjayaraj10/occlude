@@ -24,7 +24,7 @@ end
 
 function launch(::Mobius)
   N = 1000
-  angles = range(0, 2π, length=N)
+  angles = range(0, 2π, length=N+1)[1:end-1]
   pts = Point3f[]
 
   idx(i, k) = (i-1)*4 + k
@@ -36,11 +36,13 @@ function launch(::Mobius)
   end
 
   for k in 1:4
-    for i in 1:N-1
+    for i in 1:N
+      shift = i == N ? 2 : 0
+
       A = idx(i, k)
       B = idx(i, mod1(k+1, 4))
-      C = idx(i+1, mod1(k+1, 4))
-      D = idx(i+1, k)
+      C = idx(mod1(i+1,N), mod1(k+1+shift, 4))
+      D = idx(mod1(i+1,N), mod1(k+shift, 4))
 
       push!(faces, (A, B, C))
       push!(faces, (A, C, D))
