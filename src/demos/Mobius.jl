@@ -1,5 +1,3 @@
-using GLMakie
-
 struct Mobius <: Demo
 end
 
@@ -50,7 +48,11 @@ function launch(::Mobius)
   end
 
   F = stack(faces, dims=1)
-  fig = mesh(pts, F)
+  fig, ax = dark_scene()
+  mesh!(ax, pts, F, 
+        color="#00a4c4",
+        specular=0.9,
+        shininess=64)
 
   # fig = scatter(pts, markersize=8)
   wait(display(fig))
