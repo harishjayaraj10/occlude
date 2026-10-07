@@ -4,9 +4,13 @@ version = "0.1.0"
 authors = ["harishjayaraj10 <harish100603@gmail.com>"]
 
 [deps]
+GLFW = "f7f18e0c-5ee9-5ccd-a5bf-e8befd85ed98"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
+ModernGL = "66fc600b-dfda-50eb-8b99-91cfa97b1301"
 REPL = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 
 [compat]
+GLFW = "3.4.6"
 GLMakie = "0.13.15"
+ModernGL = "1.1.8"
 REPL = "1.11.0"
