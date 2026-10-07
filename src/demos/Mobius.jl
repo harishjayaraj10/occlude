@@ -54,6 +54,9 @@ function launch(::Mobius)
             specular=0.9,
             shininess=64)
 
+  step!(i) = rotate!(m, Vec3f(0, 0, 1), (i * 0.01))
+  # record_demo(fig, step!)
+
   screen = display(fig)
   θ = 0.0
   while isopen(screen)
