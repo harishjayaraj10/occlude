@@ -9,11 +9,11 @@ Playing around with graphics in Julia. The idea is to build up a small engine in
 
 ## next: learning shaders
 
-Using GLFW.jl + ModernGL.jl. Mac only goes up to OpenGL 4.1, so no compute shaders.
+Using GLFW.jl + ModernGL.jl. Everything should run on mac, windows and linux, so I'm sticking to OpenGL 4.1. That means no compute shaders.
 
 - [x] install GLFW + ModernGL
-- [ ] open a window and clear it to a color
-- [ ] draw a triangle with my own vertex + fragment shader
+- [x] open a window and clear it to a color
+- [x] draw a triangle with my own vertex + fragment shader
 - [ ] shader loading helper in common/
 - [ ] pass θ as a uniform and rotate in the shader
 - [ ] get the mobius mesh running through the shader
