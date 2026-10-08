@@ -1,6 +1,8 @@
 using GLFW
 using ModernGL
 
+include("../src/common/shader.jl")
+
 GLFW.WindowHint(GLFW.CONTEXT_VERSION_MAJOR, 4)
 GLFW.WindowHint(GLFW.CONTEXT_VERSION_MINOR, 1)
 GLFW.WindowHint(GLFW.OPENGL_PROFILE, GLFW.OPENGL_CORE_PROFILE)
@@ -36,13 +38,7 @@ vertex_src = """
   }
 """
 
-vertex_shader = glCreateShader(GL_VERTEX_SHADER)
-glShaderSource(vertex_shader, 1, Ptr{GLchar}[pointer(vertex_src)], C_NULL)
-glCompileShader(vertex_shader)
-
-ok = Ref{GLint}(0)
-glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, ok)
-println(ok[])
+vertex_shader = compile_shader(GL_VERTEX_SHADER, vertex_src)
 
 fragment_src = """
   #version 410 core
@@ -53,20 +49,9 @@ fragment_src = """
   }
 """
 
-fragment_shader = glCreateShader(GL_FRAGMENT_SHADER)
-glShaderSource(fragment_shader, 1, Ptr{GLchar}[pointer(fragment_src)], C_NULL)
-glCompileShader(fragment_shader)
+fragment_shader = compile_shader(GL_FRAGMENT_SHADER, fragment_src)
 
-glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, ok)
-println(ok[])
-
-program = glCreateProgram()
-glAttachShader(program, vertex_shader)
-glAttachShader(program, fragment_shader)
-glLinkProgram(program)
-
-glGetProgramiv(program, GL_LINK_STATUS, ok)
-println(ok[])
+program = link_program(vertex_shader, fragment_shader)
 
 brightness_loc = glGetUniformLocation(program, "brightness")
 println(brightness_loc)
