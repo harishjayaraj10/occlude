@@ -1,6 +1,7 @@
 using GLFW
 using ModernGL
 
+include("../src/common/camera.jl")
 include("../src/common/shader.jl")
 include("../src/common/mesh.jl")
 include("../src/common/window.jl")
@@ -9,21 +10,21 @@ include("../src/common/transform.jl")
 window = open_window()
 
 # println(unsafe_string(glGetString(GL_VERSION)))
-vertices = Float32[ 0, 0.75,
-                    -0.75, -0.75,
-                    0.75, -0.75]
+vertices = Float32[ 0, 0.75, 0,
+                    -0.75, -0.75, 0,
+                    0.75, -0.75, 0]
 
 aspect = 640/480
 
-vao = upload_mesh(vertices, per_point=2)
+vao = upload_mesh(vertices)
 
 vertex_src = """
   #version 410 core
-  layout(location = 0) in vec2 pos;
+  layout(location = 0) in vec3 pos;
   uniform mat4 model;
   uniform mat4 projection;
   void main() {
-    gl_Position = projection * model * vec4(pos, 0.0, 1.0);
+    gl_Position = projection * model * vec4(pos, 1.0);
   }
 """
 
@@ -61,8 +62,10 @@ while !GLFW.WindowShouldClose(window)
   t = time() - start
 
   glUniform1f(brightness_loc, sin(t)*0.5 + 0.5)
-  glUniformMatrix4fv(model_loc, 1, GL_FALSE, rotate_z(t))
-  glUniformMatrix4fv(projection_loc, 1, GL_FALSE, scale(1/aspect, 1, 1))
+  glUniformMatrix4fv(model_loc, 1, GL_FALSE,
+  translate(0, 0, -3) * rotate_y(t))
+  glUniformMatrix4fv(projection_loc, 1, GL_FALSE,
+      perspective(deg2rad(60), aspect, 0.1, 100))
 
   glDrawArrays(GL_TRIANGLES, 0, 3)
 
