@@ -5,6 +5,8 @@ using GLFW
 using ModernGL
 abstract type Demo end
 
+include("common/window.jl")
+include("common/mesh.jl")
 include("common/shader.jl")
 include("common/scene.jl")
 include("common/record.jl")

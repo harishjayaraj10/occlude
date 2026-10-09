@@ -2,33 +2,17 @@ using GLFW
 using ModernGL
 
 include("../src/common/shader.jl")
+include("../src/common/mesh.jl")
+include("../src/common/window.jl")
 
-GLFW.WindowHint(GLFW.CONTEXT_VERSION_MAJOR, 4)
-GLFW.WindowHint(GLFW.CONTEXT_VERSION_MINOR, 1)
-GLFW.WindowHint(GLFW.OPENGL_PROFILE, GLFW.OPENGL_CORE_PROFILE)
-GLFW.WindowHint(GLFW.OPENGL_FORWARD_COMPAT, true)
-
-# Create a window and its OpenGL context
-window = GLFW.CreateWindow(640, 480, "GLFW.jl")
-
-# Make the window's context current
-GLFW.MakeContextCurrent(window)
+window = open_window()
 
 # println(unsafe_string(glGetString(GL_VERSION)))
+vertices = Float32[ 0, 0.75,
+                    -0.75, -0.75,
+                    0.75, -0.75]
 
-vao = Ref{GLuint}(0)
-glGenVertexArrays(1, vao)
-glBindVertexArray(vao[])
-
-vertices = Float32[0, 0.75, -0.75, -0.75, 0.75, -0.75]
-vbo = Ref{GLuint}(0)
-glGenBuffers(1, vbo)
-glBindBuffer(GL_ARRAY_BUFFER, vbo[])
-glBufferData(GL_ARRAY_BUFFER, sizeof(vertices),
-  vertices, GL_STATIC_DRAW)
-
-glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, C_NULL)
-glEnableVertexAttribArray(0)
+vao = upload_mesh(vertices, per_point=2)
 
 vertex_src = """
   #version 410 core

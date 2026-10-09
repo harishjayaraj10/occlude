@@ -14,7 +14,7 @@ Using GLFW.jl + ModernGL.jl. Everything should run on mac, windows and linux, so
 - [x] install GLFW + ModernGL
 - [x] open a window and clear it to a color
 - [x] draw a triangle with my own vertex + fragment shader
-- [ ] shader loading helper in common/
+- [x] shader loading helper in common/
 - [ ] pass θ as a uniform and rotate in the shader
 - [ ] get the mobius mesh running through the shader
 - [ ] lighting in the fragment shader
