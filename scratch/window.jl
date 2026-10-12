@@ -10,13 +10,20 @@ include("../src/common/transform.jl")
 window = open_window()
 
 # println(unsafe_string(glGetString(GL_VERSION)))
-vertices = Float32[ 0, 0.75, 0,
-                    -0.75, -0.75, 0,
-                    0.75, -0.75, 0]
+# vertices = Float32[ 0, 0.75, 0,
+#                     -0.75, -0.75, 0,
+#                     0.75, -0.75, 0]
+
+vertices = Float32[-0.5, -0.5, 0,
+                    0.5, -0.5, 0,
+                    0.5, 0.5, 0,
+                    -0.5, 0.5, 0]
+
+indices = UInt32[0, 1, 2, 0, 2, 3]
 
 aspect = 640/480
 
-vao = upload_mesh(vertices)
+vao = upload_mesh(vertices, indices)
 
 vertex_src = """
   #version 410 core
@@ -67,7 +74,8 @@ while !GLFW.WindowShouldClose(window)
   glUniformMatrix4fv(projection_loc, 1, GL_FALSE,
       perspective(deg2rad(60), aspect, 0.1, 100))
 
-  glDrawArrays(GL_TRIANGLES, 0, 3)
+  # glDrawArrays(GL_TRIANGLES, 0, 3)
+  glDrawElements(GL_TRIANGLES, length(indices), GL_UNSIGNED_INT, C_NULL)
 
 	# Swap front and back buffers
 	GLFW.SwapBuffers(window)

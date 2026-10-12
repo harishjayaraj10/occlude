@@ -1,4 +1,4 @@
-function upload_mesh(vertices; per_point=3)
+function upload_mesh(vertices, indices; per_point=3)
   vao = Ref{GLuint}(0)
   glGenVertexArrays(1, vao)
   glBindVertexArray(vao[])
@@ -17,6 +17,11 @@ function upload_mesh(vertices; per_point=3)
                         0,
                         C_NULL)
   glEnableVertexAttribArray(0)
+
+  ebo = Ref{GLuint}(0)
+  glGenBuffers(1, ebo)
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo[])  
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW)
 
   return vao[]
 end
