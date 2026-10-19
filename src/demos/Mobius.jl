@@ -4,7 +4,7 @@ end
 name(::Mobius) = "Mobius Strip"
 # launch(::Mobius) = println("Mobius!")
 
-function mobius_mesh(; N=100)
+function mobius_mesh(; N=1000)
   angles = range(0, 2π, length=N+1)[1:end-1]
   pts = Point3f[]
 
@@ -73,11 +73,13 @@ function launch(::Mobius)
     layout(location = 0) in vec3 pos;
     uniform mat4 model;
     uniform mat4 projection;
-    out vec3 color;
+
+    out vec3 world_pos;
     void main() {
       gl_Position = projection * model * vec4(pos, 1.0);
       // color = pos + 0.5;
-      color = vec3(0.0, 0.64, 0.76);
+      // color = vec3(0.0, 0.64, 0.76);
+      world_pos = (model * vec4(pos, 1.0)).xyz;
     }
   """
   vertex_shader = compile_shader(GL_VERTEX_SHADER, vertex_src)
@@ -86,8 +88,15 @@ function launch(::Mobius)
     #version 410 core
     out vec4 frag_color;
     in vec3 color;
+    in vec3 world_pos;
     void main(){
-      frag_color = vec4(color, 1.0);
+      // frag_color = vec4(color, 1.0);
+
+      vec3 normal = normalize(cross(dFdx(world_pos), dFdy(world_pos)));
+      vec3 light_dir = normalize(vec3(0.5, 1.0, 0.8));
+      float diffuse = max(dot(normal, light_dir), 0.0);
+      vec3 base = vec3(0.0, 0.64, 0.77);
+      frag_color = vec4(base * (0.2 + 0.8 * diffuse), 1.0);
     }
   """
 
