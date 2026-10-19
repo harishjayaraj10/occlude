@@ -4,7 +4,7 @@ end
 name(::Mobius) = "Mobius Strip"
 # launch(::Mobius) = println("Mobius!")
 
-function mobius_mesh(; N=1000)
+function mobius_mesh(; N=100)
   angles = range(0, 2π, length=N+1)[1:end-1]
   pts = Point3f[]
 
@@ -35,8 +35,15 @@ function mobius_mesh(; N=1000)
   return pts, F
 end
 
+function twist(u, v, θ)
+  uprime = u*cos(θ) - v*sin(θ)
+  vprime = u*sin(θ) + v*cos(θ)
+
+  return (uprime, vprime)
+end
+
 function section(a; R=3, w=1, h=0.5)
-  center = Point3f(R*cos(a), R*sin(a), 0)
+center = Point3f(R*cos(a), R*sin(a), 0)
   out = Point3f(cos(a), sin(a), 0)
   up = Point3f(0, 0, 1)
 
@@ -55,27 +62,68 @@ function launch(::Mobius)
 
   pts, F = mobius_mesh()
 
-  fig, ax = dark_scene()
-  m = mesh!(ax, pts, F,
-            color="#00a4c4",
-            specular=0.9,
-            shininess=64)
+  window = open_window()
+  vertices = collect(reinterpret(Float32, pts))
+  indices = UInt32.(vec(permutedims(F)) .- 1)
 
-  step!(i) = rotate!(m, Vec3f(0, 0, 1), (i * 0.01))
-  # record_demo(fig, step!)
+  vao = upload_mesh(vertices, indices)
 
-  screen = display(fig)
-  θ = 0.0
-  while isopen(screen)
-    θ += 0.01
-    rotate!(m, Vec3f(0, 0, 1), θ)
-    sleep(1/60)
+  vertex_src = """
+    #version 410 core
+    layout(location = 0) in vec3 pos;
+    uniform mat4 model;
+    uniform mat4 projection;
+    out vec3 color;
+    void main() {
+      gl_Position = projection * model * vec4(pos, 1.0);
+      color = pos + 0.5;
+    }
+  """
+  vertex_shader = compile_shader(GL_VERTEX_SHADER, vertex_src)
+
+  fragment_src = """
+    #version 410 core
+    out vec4 frag_color;
+    in vec3 color;
+    void main(){
+      frag_color = vec4(color, 1.0);
+    }
+  """
+
+  fragment_shader = compile_shader(GL_FRAGMENT_SHADER, fragment_src)
+
+  program = link_program(vertex_shader, fragment_shader)
+
+  model_loc = glGetUniformLocation(program, "model")
+  projection_loc = glGetUniformLocation(program, "projection")
+
+  aspect = 640/480
+
+  start = time()
+
+  glEnable(GL_DEPTH_TEST)
+
+  while !GLFW.WindowShouldClose(window)
+    glClearColor(0, 0, 0, 0)
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+    glUseProgram(program)
+    glBindVertexArray(vao)
+
+    t = time() - start
+
+    glUniformMatrix4fv(model_loc, 1, GL_FALSE,
+                       translate(0, 0, -10) * rotate_z(t))
+    glUniformMatrix4fv(projection_loc, 1, GL_FALSE, perspective(deg2rad(60),
+                       aspect, 0.1, 100))
+
+    glDrawElements(GL_TRIANGLES, length(indices), GL_UNSIGNED_INT, C_NULL)
+
+    GLFW.SwapBuffers(window)
+
+    GLFW.PollEvents()
   end
-end
 
-function twist(u, v, θ)
-  uprime = u*cos(θ) - v*sin(θ)
-  vprime = u*sin(θ) + v*cos(θ)
+  GLFW.DestroyWindow(window)
 
-  return (uprime, vprime)
 end
