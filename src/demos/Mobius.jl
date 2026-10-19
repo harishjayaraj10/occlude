@@ -95,7 +95,8 @@ function launch(::Mobius)
       vec3 normal = normalize(cross(dFdx(world_pos), dFdy(world_pos)));
       vec3 light_dir = normalize(vec3(0.5, 1.0, 0.8));
       float diffuse = max(dot(normal, light_dir), 0.0);
-      vec3 half_dir = normalize(light_dir + normalize(-world_pos));
+      vec3 view_dir = vec3(0.0, 0.0, 1.0);
+      vec3 half_dir = normalize(light_dir + view_dir);
       float spec = pow(max(dot(normal, half_dir), 0.0), 64.0);
       vec3 base = vec3(0.0, 0.64, 0.77);
       frag_color = vec4(base * (0.2 + 0.8 * diffuse) + vec3(0.9 * spec), 1.0);
@@ -110,6 +111,9 @@ function launch(::Mobius)
   projection_loc = glGetUniformLocation(program, "projection")
 
   aspect = 640/480
+
+  fb = GLFW.GetFramebufferSize(window)
+  io = start_recording("recordings/mobius.mp4", fb.width, fb.height)
 
   start = time()
 
@@ -132,11 +136,15 @@ function launch(::Mobius)
 
     glDrawElements(GL_TRIANGLES, length(indices), GL_UNSIGNED_INT, C_NULL)
 
+    pixels = read_frame(window)
+    write(io, pixels)
+
     GLFW.SwapBuffers(window)
 
     GLFW.PollEvents()
   end
 
   GLFW.DestroyWindow(window)
+  close(io)
 
 end
