@@ -21,25 +21,29 @@ window = open_window()
 
 back, front = -0.5, 0.5
 
-vertices = Float32[-0.5, -0.5, back,
-                    0.5, -0.5, back,
-                    0.5,  0.5, back,
-                   -0.5,  0.5, back,
-                   -0.5, -0.5, front,
-                    0.5, -0.5, front,
-                    0.5,  0.5, front,
-                   -0.5,  0.5, front]
+vertices = Float32[
+    -0.5, -0.5, back,
+    0.5, -0.5, back,
+    0.5, 0.5, back,
+    -0.5, 0.5, back,
+    -0.5, -0.5, front,
+    0.5, -0.5, front,
+    0.5, 0.5, front,
+    -0.5, 0.5, front,
+]
 
 # indices = UInt32[0, 1, 2, 0, 2, 3]
 
-indices = UInt32[0, 1, 2, 0, 2, 3, # back
-                 4, 5, 6, 4, 6, 7, # front
-                 0, 1, 4, 1, 4, 5, # bottom
-                 3, 7, 2, 2, 7, 6, # top
-                 1, 2, 6, 1, 6, 5, # right
-                 0, 7, 3, 0, 4, 7] # left
+indices = UInt32[
+    0, 1, 2, 0, 2, 3, # back
+    4, 5, 6, 4, 6, 7, # front
+    0, 1, 4, 1, 4, 5, # bottom
+    3, 7, 2, 2, 7, 6, # top
+    1, 2, 6, 1, 6, 5, # right
+    0, 7, 3, 0, 4, 7,
+] # left
 
-aspect = 640/480
+aspect = 640 / 480
 
 vao = upload_mesh(vertices, indices)
 
@@ -82,29 +86,33 @@ glEnable(GL_DEPTH_TEST)
 # Loop until the user closes the window
 while !GLFW.WindowShouldClose(window)
 
-	# Render here
-  glClearColor(0, 0, 0, 0)
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    # Render here
+    glClearColor(0, 0, 0, 0)
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-  glUseProgram(program)
-  glBindVertexArray(vao)
+    glUseProgram(program)
+    glBindVertexArray(vao)
 
-  t = time() - start
+    t = time() - start
 
-  glUniform1f(brightness_loc, sin(t)*0.5 + 0.5)
-  glUniformMatrix4fv(model_loc, 1, GL_FALSE,
-  translate(0, 0, -3) * rotate_y(t))
-  glUniformMatrix4fv(projection_loc, 1, GL_FALSE,
-      perspective(deg2rad(60), aspect, 0.1, 100))
+    glUniform1f(brightness_loc, sin(t) * 0.5 + 0.5)
+    glUniformMatrix4fv(
+        model_loc, 1, GL_FALSE,
+        translate(0, 0, -3) * rotate_y(t)
+    )
+    glUniformMatrix4fv(
+        projection_loc, 1, GL_FALSE,
+        perspective(deg2rad(60), aspect, 0.1, 100)
+    )
 
-  # glDrawArrays(GL_TRIANGLES, 0, 3)
-  glDrawElements(GL_TRIANGLES, length(indices), GL_UNSIGNED_INT, C_NULL)
+    # glDrawArrays(GL_TRIANGLES, 0, 3)
+    glDrawElements(GL_TRIANGLES, length(indices), GL_UNSIGNED_INT, C_NULL)
 
-	# Swap front and back buffers
-	GLFW.SwapBuffers(window)
+    # Swap front and back buffers
+    GLFW.SwapBuffers(window)
 
-	# Poll for and process events
-	GLFW.PollEvents()
+    # Poll for and process events
+    GLFW.PollEvents()
 end
 
 GLFW.DestroyWindow(window)
