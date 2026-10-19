@@ -13,13 +13,31 @@ window = open_window()
 # vertices = Float32[ 0, 0.75, 0,
 #                     -0.75, -0.75, 0,
 #                     0.75, -0.75, 0]
+#
+# vertices = Float32[-0.5, -0.5, 0,
+#                     0.5, -0.5, 0,
+#                     0.5, 0.5, 0,
+#                     -0.5, 0.5, 0]
 
-vertices = Float32[-0.5, -0.5, 0,
-                    0.5, -0.5, 0,
-                    0.5, 0.5, 0,
-                    -0.5, 0.5, 0]
+back, front = -0.5, 0.5
 
-indices = UInt32[0, 1, 2, 0, 2, 3]
+vertices = Float32[-0.5, -0.5, back,
+                    0.5, -0.5, back,
+                    0.5,  0.5, back,
+                   -0.5,  0.5, back,
+                   -0.5, -0.5, front,
+                    0.5, -0.5, front,
+                    0.5,  0.5, front,
+                   -0.5,  0.5, front]
+
+# indices = UInt32[0, 1, 2, 0, 2, 3]
+
+indices = UInt32[0, 1, 2, 0, 2, 3, # back
+                 4, 5, 6, 4, 6, 7, # front
+                 0, 1, 4, 1, 4, 5, # bottom
+                 3, 7, 2, 2, 7, 6, # top
+                 1, 2, 6, 1, 6, 5, # right
+                 0, 7, 3, 0, 4, 7] # left
 
 aspect = 640/480
 
@@ -30,8 +48,10 @@ vertex_src = """
   layout(location = 0) in vec3 pos;
   uniform mat4 model;
   uniform mat4 projection;
+  out vec3 color;
   void main() {
     gl_Position = projection * model * vec4(pos, 1.0);
+    color = pos + 0.5;
   }
 """
 
@@ -41,8 +61,9 @@ fragment_src = """
   #version 410 core
   out vec4 frag_color;
   uniform float brightness;
+  in vec3 color;
   void main(){
-    frag_color = vec4(1.0, 0.5, 0.2, 1.0) * brightness;
+    frag_color = vec4(color, 1.0);
   }
 """
 
@@ -56,12 +77,14 @@ projection_loc = glGetUniformLocation(program, "projection")
 
 start = time()
 
+glEnable(GL_DEPTH_TEST)
+
 # Loop until the user closes the window
 while !GLFW.WindowShouldClose(window)
 
 	# Render here
   glClearColor(0, 0, 0, 0)
-  glClear(GL_COLOR_BUFFER_BIT)
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
   glUseProgram(program)
   glBindVertexArray(vao)
