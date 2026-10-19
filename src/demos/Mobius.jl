@@ -76,7 +76,8 @@ function launch(::Mobius)
     out vec3 color;
     void main() {
       gl_Position = projection * model * vec4(pos, 1.0);
-      color = pos + 0.5;
+      // color = pos + 0.5;
+      color = vec3(0.0, 0.64, 0.76);
     }
   """
   vertex_shader = compile_shader(GL_VERTEX_SHADER, vertex_src)
@@ -111,9 +112,10 @@ function launch(::Mobius)
     glBindVertexArray(vao)
 
     t = time() - start
+    tilt = deg2rad(-90 + 35.26) # atan(1/√2) = 35.26
 
     glUniformMatrix4fv(model_loc, 1, GL_FALSE,
-                       translate(0, 0, -10) * rotate_z(t))
+                      translate(0, 0, -10) * rotate_x(tilt) * rotate_z(t))
     glUniformMatrix4fv(projection_loc, 1, GL_FALSE, perspective(deg2rad(60),
                        aspect, 0.1, 100))
 
