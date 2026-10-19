@@ -87,7 +87,7 @@ function launch(::Mobius)
   fragment_src = """
     #version 410 core
     out vec4 frag_color;
-    in vec3 color;
+    // in vec3 color;
     in vec3 world_pos;
     void main(){
       // frag_color = vec4(color, 1.0);
@@ -95,8 +95,10 @@ function launch(::Mobius)
       vec3 normal = normalize(cross(dFdx(world_pos), dFdy(world_pos)));
       vec3 light_dir = normalize(vec3(0.5, 1.0, 0.8));
       float diffuse = max(dot(normal, light_dir), 0.0);
+      vec3 half_dir = normalize(light_dir + normalize(-world_pos));
+      float spec = pow(max(dot(normal, half_dir), 0.0), 64.0);
       vec3 base = vec3(0.0, 0.64, 0.77);
-      frag_color = vec4(base * (0.2 + 0.8 * diffuse), 1.0);
+      frag_color = vec4(base * (0.2 + 0.8 * diffuse) + vec3(0.9 * spec), 1.0);
     }
   """
 
