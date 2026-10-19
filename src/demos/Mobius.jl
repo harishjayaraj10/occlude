@@ -116,7 +116,7 @@ function launch(::Mobius)
 
     glUniformMatrix4fv(model_loc, 1, GL_FALSE,
                       translate(0, 0, -10) * rotate_x(tilt) * rotate_z(t))
-    glUniformMatrix4fv(projection_loc, 1, GL_FALSE, perspective(deg2rad(60),
+    glUniformMatrix4fv(projection_loc, 1, GL_FALSE, orthographic(4,
                        aspect, 0.1, 100))
 
     glDrawElements(GL_TRIANGLES, length(indices), GL_UNSIGNED_INT, C_NULL)
