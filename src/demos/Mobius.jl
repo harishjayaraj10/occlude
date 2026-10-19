@@ -4,24 +4,7 @@ end
 name(::Mobius) = "Mobius Strip"
 # launch(::Mobius) = println("Mobius!")
 
-function section(a; R=3, w=1, h=0.5)
-  center = Point3f(R*cos(a), R*sin(a), 0)
-  out = Point3f(cos(a), sin(a), 0)
-  up = Point3f(0, 0, 1)
-
-  corners = Point3f[]
-  c_points = [(-w/2, -h/2), (w/2, -h/2), (w/2, h/2), (-w/2, h/2)]
-
-  for (x, y) in c_points
-    u, v = twist(x, y, a/2)
-    push!(corners, center + u*out + v*up)
-  end
-
-  return corners
-end
-
-function launch(::Mobius)
-  N = 1000
+function mobius_mesh(; N=1000)
   angles = range(0, 2π, length=N+1)[1:end-1]
   pts = Point3f[]
 
@@ -48,22 +31,8 @@ function launch(::Mobius)
   end
 
   F = stack(faces, dims=1)
-  fig, ax = dark_scene()
-  m = mesh!(ax, pts, F,
-            color="#00a4c4",
-            specular=0.9,
-            shininess=64)
 
-  step!(i) = rotate!(m, Vec3f(0, 0, 1), (i * 0.01))
-  # record_demo(fig, step!)
-
-  screen = display(fig)
-  θ = 0.0
-  while isopen(screen)
-    θ += 0.01
-    rotate!(m, Vec3f(0, 0, 1), θ)
-    sleep(1/60)
-  end
+  return pts, F
 end
 
 function twist(u, v, θ)
@@ -71,4 +40,103 @@ function twist(u, v, θ)
   vprime = u*sin(θ) + v*cos(θ)
 
   return (uprime, vprime)
+end
+
+function section(a; R=3, w=1, h=0.5)
+center = Point3f(R*cos(a), R*sin(a), 0)
+  out = Point3f(cos(a), sin(a), 0)
+  up = Point3f(0, 0, 1)
+
+  corners = Point3f[]
+  c_points = [(-w/2, -h/2), (w/2, -h/2), (w/2, h/2), (-w/2, h/2)]
+
+  for (x, y) in c_points
+    u, v = twist(x, y, a/2)
+    push!(corners, center + u*out + v*up)
+  end
+
+  return corners
+end
+
+function launch(::Mobius)
+
+  pts, F = mobius_mesh()
+
+  window = open_window()
+  vertices = collect(reinterpret(Float32, pts))
+  indices = UInt32.(vec(permutedims(F)) .- 1)
+
+  vao = upload_mesh(vertices, indices)
+
+  vertex_src = """
+    #version 410 core
+    layout(location = 0) in vec3 pos;
+    uniform mat4 model;
+    uniform mat4 projection;
+
+    out vec3 world_pos;
+    void main() {
+      gl_Position = projection * model * vec4(pos, 1.0);
+      // color = pos + 0.5;
+      // color = vec3(0.0, 0.64, 0.76);
+      world_pos = (model * vec4(pos, 1.0)).xyz;
+    }
+  """
+  vertex_shader = compile_shader(GL_VERTEX_SHADER, vertex_src)
+
+  fragment_src = """
+    #version 410 core
+    out vec4 frag_color;
+    // in vec3 color;
+    in vec3 world_pos;
+    void main(){
+      // frag_color = vec4(color, 1.0);
+
+      vec3 normal = normalize(cross(dFdx(world_pos), dFdy(world_pos)));
+      vec3 light_dir = normalize(vec3(0.5, 1.0, 0.8));
+      float diffuse = max(dot(normal, light_dir), 0.0);
+      vec3 half_dir = normalize(light_dir + normalize(-world_pos));
+      float spec = pow(max(dot(normal, half_dir), 0.0), 64.0);
+      vec3 base = vec3(0.0, 0.64, 0.77);
+      frag_color = vec4(base * (0.2 + 0.8 * diffuse) + vec3(0.9 * spec), 1.0);
+    }
+  """
+
+  fragment_shader = compile_shader(GL_FRAGMENT_SHADER, fragment_src)
+
+  program = link_program(vertex_shader, fragment_shader)
+
+  model_loc = glGetUniformLocation(program, "model")
+  projection_loc = glGetUniformLocation(program, "projection")
+
+  aspect = 640/480
+
+  start = time()
+
+  glEnable(GL_DEPTH_TEST)
+
+  while !GLFW.WindowShouldClose(window)
+    glClearColor(0, 0, 0, 0)
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+    glUseProgram(program)
+    glBindVertexArray(vao)
+
+    t = time() - start
+    tilt = deg2rad(-90 + 35.26) # atan(1/√2) = 35.26
+
+    glUniformMatrix4fv(model_loc, 1, GL_FALSE,
+                      translate(0, 0, -10) * rotate_x(tilt) * rotate_z(t))
+    glUniformMatrix4fv(projection_loc, 1, GL_FALSE, orthographic(4,
+                       aspect, 0.1, 100))
+
+    glDrawElements(GL_TRIANGLES, length(indices), GL_UNSIGNED_INT, C_NULL)
+
+    GLFW.SwapBuffers(window)
+
+    GLFW.PollEvents()
+  end
+
+  GLFW.DestroyWindow(window)
+
 end
