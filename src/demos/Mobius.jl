@@ -4,24 +4,7 @@ end
 name(::Mobius) = "Mobius Strip"
 # launch(::Mobius) = println("Mobius!")
 
-function section(a; R=3, w=1, h=0.5)
-  center = Point3f(R*cos(a), R*sin(a), 0)
-  out = Point3f(cos(a), sin(a), 0)
-  up = Point3f(0, 0, 1)
-
-  corners = Point3f[]
-  c_points = [(-w/2, -h/2), (w/2, -h/2), (w/2, h/2), (-w/2, h/2)]
-
-  for (x, y) in c_points
-    u, v = twist(x, y, a/2)
-    push!(corners, center + u*out + v*up)
-  end
-
-  return corners
-end
-
-function launch(::Mobius)
-  N = 1000
+function mobius_mesh(; N=1000)
   angles = range(0, 2π, length=N+1)[1:end-1]
   pts = Point3f[]
 
@@ -48,6 +31,30 @@ function launch(::Mobius)
   end
 
   F = stack(faces, dims=1)
+
+  return pts, F
+end
+
+function section(a; R=3, w=1, h=0.5)
+  center = Point3f(R*cos(a), R*sin(a), 0)
+  out = Point3f(cos(a), sin(a), 0)
+  up = Point3f(0, 0, 1)
+
+  corners = Point3f[]
+  c_points = [(-w/2, -h/2), (w/2, -h/2), (w/2, h/2), (-w/2, h/2)]
+
+  for (x, y) in c_points
+    u, v = twist(x, y, a/2)
+    push!(corners, center + u*out + v*up)
+  end
+
+  return corners
+end
+
+function launch(::Mobius)
+
+  pts, F = mobius_mesh()
+
   fig, ax = dark_scene()
   m = mesh!(ax, pts, F,
             color="#00a4c4",
